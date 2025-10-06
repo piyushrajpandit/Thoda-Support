@@ -49,7 +49,7 @@ const Navbar = () => {
 
       <Link className="logo font-bold text-lg flex justify-center items-center" href={"/"}>
       
-        <span className='text-xl md:text-base my-3 md:my-0'>Thoda Support</span>
+        <span className='text-xl md:text-base my-3 md:my-0'>Thoda Support  heheh</span>
           <img className='invertImg ' src="tea.webp" width={44} alt="" />
       </Link>
 
