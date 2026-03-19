@@ -13,23 +13,33 @@ export const authoptions = NextAuth({
   callbacks: {
     async signIn({ user, account }) {
       if (account.provider == "github") {
-        await connectDb()
-        const currentUser = await User.findOne({ email: user.email })
-        if (!currentUser) {
-          await User.create({
-            email: user.email,
-            username: user.email.split("@")[0],
-          })
+        try {
+          await connectDb()
+          const currentUser = await User.findOne({ email: user.email })
+          if (!currentUser) {
+            await User.create({
+              email: user.email,
+              username: user.email.split("@")[0],
+            })
+          }
+          return true
+        } catch (error) {
+          console.error('SignIn error:', error.message)
+          return false
         }
-        return true
       }
     },
     async session({ session }) {
-      const dbUser = await User.findOne({ email: session.user.email })
-      if (dbUser) {
-        session.user.name = dbUser.username
+      try {
+        const dbUser = await User.findOne({ email: session.user.email })
+        if (dbUser) {
+          session.user.name = dbUser.username
+        }
+        return session
+      } catch (error) {
+        console.error('Session error:', error.message)
+        return session
       }
-      return session
     },
   }
 })
