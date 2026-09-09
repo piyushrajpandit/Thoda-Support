@@ -15,6 +15,9 @@ export const POST = async (req) => {
   }
 
   let user = await User.findOne({ username: p.to_user });
+  if (!user || !user.razorpaysecret) {
+    return NextResponse.json({ success: false, message: "User or Razorpay credentials not found" });
+  }
   const secret = user.razorpaysecret;
 
   let xx = validatePaymentVerification(
@@ -26,11 +29,13 @@ export const POST = async (req) => {
   if (xx) {
     const updatedPayment = await Payment.findOneAndUpdate(
       { oid: body.razorpay_order_id },
-      { status: "SUCCESS" },
+      { done: true },
       { new: true }
     );
+    const origin = req.headers.get("origin") || req.nextUrl?.origin || "http://localhost:3000";
+    const baseUrl = process.env.NEXT_PUBLIC_URL || origin;
     return NextResponse.redirect(
-      `${process.env.NEXT_PUBLIC_URL}/${updatedPayment.to_user}?paymentdone=true`
+      `${baseUrl}/${updatedPayment.to_user}?paymentdone=true`
     );
   } else {
     return NextResponse.json({ success: false, message: "Payment Verification Failed" });

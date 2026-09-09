@@ -23,17 +23,17 @@ const Login = () => {
       <div className="social-login-buttons">
         <div className="flex flex-col gap-2 min-h-screen  p-10 items-center">
           
-<div className="bg-gray-50 border-l-4 border-gray-400 rounded-r px-4 py-3 text-sm text-gray-700 max-w-md">
+<div className="bg-gray-800 border-l-4 border-blue-500 rounded-r px-4 py-3 text-sm text-white max-w-md">
   <div className="flex">
     <div className="flex-1">
-      Only github button is working for now
+      GitHub and Google login are enabled.
     </div>
   </div>
 </div>
 
-
 <button
-    className="flex items-center w-64 bg-slate-900 text-black border border-gray-300 rounded-lg shadow-md max-w-xs px-6 py-2 text-sm font-medium  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 ">
+    onClick={() => signIn("google")}
+    className="flex items-center w-64 bg-slate-50 text-black border border-gray-300 rounded-lg shadow-md max-w-xs px-6 py-2 text-sm font-medium hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
     <svg className="h-6 w-6 mr-2" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink"
         viewBox="-0.5 0 48 48" version="1.1">
 

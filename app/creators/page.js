@@ -16,7 +16,7 @@ export default function CreatorsPage() {
       <h1 className="text-3xl font-bold text-center mb-10">All Creators</h1>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 max-w-6xl mx-auto">
         {creators.map((creator) => (
-          <Link href={`/${creator.username}`} key={creator.username}>
+          <Link href={`/${encodeURIComponent(creator.username)}`} key={creator.username}>
             <div className="flex flex-col items-center bg-gray-900 rounded-xl p-4 hover:bg-gray-800 transition cursor-pointer">
               <img
                 src={creator.profilepic || "/default-avatar.png"}

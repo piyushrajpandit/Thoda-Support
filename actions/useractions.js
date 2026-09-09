@@ -5,66 +5,89 @@ import Payment from "@/models/Payment"
 import connectDb from "@/db/connectDb"
 import User from "@/models/User"
 
-
 export const initiate = async (amount, to_username, paymentform) => {
     await connectDb()
-    // fetch the secret of the user who is getting the payment 
-    let user = await User.findOne({username: to_username})
-    const secret = user.razorpaysecret
+    let decoded = decodeURIComponent(to_username)
+    let clean = decoded.trim()
+    let regex = new RegExp(`^${clean.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`, 'i')
+    let user = await User.findOne({
+        $or: [
+            { username: to_username },
+            { username: decoded },
+            { username: clean },
+            { username: regex }
+        ]
+    })
+    if (!user || !user.razorpayid || !user.razorpaysecret) {
+        throw new Error("User has not setup Razorpay credentials properly.")
+    }
 
-    var instance = new Razorpay({ key_id: user.razorpayid, key_secret: secret })
-
-
+    const instance = new Razorpay({ key_id: user.razorpayid, key_secret: user.razorpaysecret })
 
     let options = {
-        amount: Number.parseInt(amount),
+        amount: Number.parseInt(amount), // amount in paise
         currency: "INR",
     }
 
     let x = await instance.orders.create(options)
 
-    // create a payment object which shows a pending payment in the database
-    await Payment.create({ oid: x.id, amount: amount/100, to_user: to_username, name: paymentform.name, message: paymentform.message })
+    // Create a pending payment record in rupees (amount / 100)
+    await Payment.create({
+        oid: x.id,
+        amount: Number.parseInt(amount) / 100,
+        to_user: user.username,
+        name: paymentform.name,
+        message: paymentform.message
+    })
 
-    return x
-
+    return JSON.parse(JSON.stringify(x))
 }
-
 
 export const fetchuser = async (username) => {
     await connectDb()
-    let u = await User.findOne({ username: username })
-    let user = u.toObject({ flattenObjectIds: true })
+    let decoded = decodeURIComponent(username)
+    let clean = decoded.trim()
+    let regex = new RegExp(`^${clean.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`, 'i')
+    let u = await User.findOne({
+        $or: [
+            { username: username },
+            { username: decoded },
+            { username: clean },
+            { username: regex }
+        ]
+    })
+    if (!u) return null
+    let user = JSON.parse(JSON.stringify(u.toObject()))
     return user
 }
 
 export const fetchpayments = async (username) => {
     await connectDb()
-    // find all payments sorted by decreasing order of amount and flatten object ids
-    let p = await Payment.find({ to_user: username, done:true }).sort({ amount: -1 }).limit(10).lean()
-    return p
+    let decoded = decodeURIComponent(username)
+    let clean = decoded.trim()
+    let regex = new RegExp(`^${clean.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`, 'i')
+    let p = await Payment.find({
+        to_user: { $in: [username, decoded, clean, regex] },
+        done: true
+    }).sort({ amount: -1 }).limit(10).lean()
+    return JSON.parse(JSON.stringify(p))
 }
 
 export const updateProfile = async (data, oldusername) => {
     await connectDb()
-    let ndata = Object.fromEntries(data)
+    let ndata = typeof data.entries === 'function' ? Object.fromEntries(data) : data
 
-    // If the username is being updated, check if username is available
+    // If username is being changed, check availability
     if (oldusername !== ndata.username) {
         let u = await User.findOne({ username: ndata.username })
         if (u) {
             return { error: "Username already exists" }
-        }   
-        await User.updateOne({email: ndata.email}, ndata)
-        // Now update all the usernames in the Payments table 
-        await Payment.updateMany({to_user: oldusername}, {to_user: ndata.username})
-        
-    }
-    else{
-
-        
-        await User.updateOne({email: ndata.email}, ndata)
+        }
+        await User.updateOne({ email: ndata.email }, ndata)
+        await Payment.updateMany({ to_user: oldusername }, { to_user: ndata.username })
+    } else {
+        await User.updateOne({ email: ndata.email }, ndata)
     }
 
-
+    return { success: true }
 }

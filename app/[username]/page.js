@@ -1,38 +1,44 @@
 import PaymentPage from '@/components/PaymentPage'
-import React from 'react'
+import React, { Suspense } from 'react'
 import { notFound } from "next/navigation"
 import connectDB from '@/db/connectDb'
 import User from '@/models/User'
 
-
 const Username = async ({ params }) => {
-    //if user name is not found show 404 page
-    const checkuser = async (username) =>{
-        await connectDB()
-        let u = await User.findOne({username: params.username})
+    const resolvedParams = await params;
+    const rawUsername = resolvedParams.username;
+    const decodedUsername = decodeURIComponent(rawUsername);
+    const cleanUsername = decodedUsername.trim();
+    const regexPattern = new RegExp(`^${cleanUsername.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`, 'i');
 
-    if(!u){
-        return notFound()
+    await connectDB();
+    let u = await User.findOne({
+        $or: [
+            { username: rawUsername },
+            { username: decodedUsername },
+            { username: cleanUsername },
+            { username: regexPattern }
+        ]
+    });
+
+    if (!u) {
+        return notFound();
     }
-  }
-    await checkuser()
-      
-      return (
-        <>
-      <PaymentPage username={params.username}/>
-      
-    </>
-  )
-}
 
+    return (
+        <Suspense fallback={<div className="text-white text-center py-20">Loading...</div>}>
+            <PaymentPage username={u.username} />
+        </Suspense>
+    );
+};
 
-export default Username
+export default Username;
 
-// or dynamic metadata
 export async function generateMetadata({ params }) {
-  return {
-    title: `Supprot ${params.username} - Get Me A Capital`,   
-
-  }
-
+    const resolvedParams = await params;
+    const rawUsername = resolvedParams.username;
+    const decodedUsername = decodeURIComponent(rawUsername);
+    return {
+        title: `Support ${decodedUsername.trim()} - Thoda Support`,
+    };
 }
