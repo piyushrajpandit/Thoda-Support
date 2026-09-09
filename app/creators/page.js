@@ -30,7 +30,12 @@ export default function CreatorsPage() {
           </Link>
         ))}
         {creators.length === 0 && (
-          <p className="col-span-full text-center text-gray-500">No creators yet. Be the first!</p>
+          <div className="col-span-full text-center py-10 px-6 bg-gray-900/60 rounded-xl border border-gray-800 my-4 max-w-lg mx-auto">
+            <p className="text-gray-300 font-medium mb-2">No creators found yet.</p>
+            <p className="text-xs text-yellow-400/90 leading-relaxed">
+              💡 <strong>Reminder:</strong> If you already have creators registered, your MongoDB Atlas Free Tier cluster might be paused due to inactivity. Check your MongoDB Atlas Dashboard to resume the cluster or verify your database connection string in Vercel settings.
+            </p>
+          </div>
         )}
       </div>
     </div>
