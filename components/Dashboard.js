@@ -15,6 +15,11 @@ const Dashboard = () => {
         username: "",
         profilepic: "",
         coverpic: "",
+        bio: "",
+        twitter: "",
+        youtube: "",
+        linkedin: "",
+        portfolio: "",
         razorpayid: "",
         razorpaysecret: ""
     })
@@ -98,6 +103,10 @@ const Dashboard = () => {
                         <input value={form.username || ""} onChange={handleChange} type="text" name='username' id="username" className="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
                     </div>
                     <div className="my-2">
+                        <label htmlFor="bio" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Short Bio</label>
+                        <textarea value={form.bio || ""} onChange={handleChange} rows={2} name='bio' id="bio" placeholder="Tell your supporters about yourself..." className="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+                    </div>
+                    <div className="my-2">
                         <label htmlFor="profilepic" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Profile Picture URL</label>
                         <input value={form.profilepic || ""} onChange={handleChange} type="text" name='profilepic' id="profilepic" className="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
                     </div>
@@ -105,13 +114,38 @@ const Dashboard = () => {
                         <label htmlFor="coverpic" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Cover Picture URL</label>
                         <input value={form.coverpic || ""} onChange={handleChange} type="text" name='coverpic' id="coverpic" className="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
                     </div>
-                    <div className="my-2">
-                        <label htmlFor="razorpayid" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Razorpay Key ID</label>
-                        <input value={form.razorpayid || ""} onChange={handleChange} type="text" name='razorpayid' id="razorpayid" className="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+
+                    <div className="my-4 pt-3 border-t border-gray-700">
+                        <h3 className="text-md font-semibold mb-2 text-blue-400">Social Links & Web Presence</h3>
+                        
+                        <div className="my-2">
+                            <label htmlFor="twitter" className="block mb-1 text-xs font-medium text-gray-300">Twitter / X URL</label>
+                            <input value={form.twitter || ""} onChange={handleChange} type="text" name='twitter' id="twitter" placeholder="https://x.com/yourhandle" className="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" />
+                        </div>
+                        <div className="my-2">
+                            <label htmlFor="youtube" className="block mb-1 text-xs font-medium text-gray-300">YouTube Channel URL</label>
+                            <input value={form.youtube || ""} onChange={handleChange} type="text" name='youtube' id="youtube" placeholder="https://youtube.com/@yourchannel" className="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" />
+                        </div>
+                        <div className="my-2">
+                            <label htmlFor="linkedin" className="block mb-1 text-xs font-medium text-gray-300">LinkedIn Profile URL</label>
+                            <input value={form.linkedin || ""} onChange={handleChange} type="text" name='linkedin' id="linkedin" placeholder="https://linkedin.com/in/yourprofile" className="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" />
+                        </div>
+                        <div className="my-2">
+                            <label htmlFor="portfolio" className="block mb-1 text-xs font-medium text-gray-300">Portfolio / Website URL</label>
+                            <input value={form.portfolio || ""} onChange={handleChange} type="text" name='portfolio' id="portfolio" placeholder="https://yourwebsite.com" className="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" />
+                        </div>
                     </div>
-                    <div className="my-2">
-                        <label htmlFor="razorpaysecret" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Razorpay Key Secret</label>
-                        <input value={form.razorpaysecret || ""} onChange={handleChange} type="text" name='razorpaysecret' id="razorpaysecret" className="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+
+                    <div className="my-4 pt-3 border-t border-gray-700">
+                        <h3 className="text-md font-semibold mb-2 text-blue-400">Payment Integration</h3>
+                        <div className="my-2">
+                            <label htmlFor="razorpayid" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Razorpay Key ID</label>
+                            <input value={form.razorpayid || ""} onChange={handleChange} type="text" name='razorpayid' id="razorpayid" className="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+                        </div>
+                        <div className="my-2">
+                            <label htmlFor="razorpaysecret" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Razorpay Key Secret</label>
+                            <input value={form.razorpaysecret || ""} onChange={handleChange} type="text" name='razorpaysecret' id="razorpaysecret" className="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+                        </div>
                     </div>
 
                     <div className="my-6">
