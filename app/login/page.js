@@ -10,11 +10,9 @@ const Login = () => {
   const { data: session } = useSession();
   const router = useRouter();
 
-  // Modes: 'direct' (details only, no auth/OTP needed), 'login' (phone/pass login), 'signup' (phone/pass signup)
-  const [mode, setMode] = useState('direct');
+  const [mode, setMode] = useState('direct'); // 'direct', 'login', 'signup'
   const [loading, setLoading] = useState(false);
 
-  // Forms
   const [directForm, setDirectForm] = useState({
     username: '',
     name: '',
@@ -34,7 +32,7 @@ const Login = () => {
   const [signupForm, setSignupForm] = useState({ phone: '', username: '', name: '', password: '' });
 
   useEffect(() => {
-    document.title = "Create Account or Login - Thoda Support";
+    document.title = "Get Started - Thoda Support";
     if (session) router.push("/dashboard");
   }, [session, router]);
 
@@ -50,11 +48,10 @@ const Login = () => {
     setSignupForm({ ...signupForm, [e.target.name]: e.target.value });
   };
 
-  // Direct Account Creation (No Auth / Password / OTP needed)
   const handleDirectSubmit = async (e) => {
     e.preventDefault();
     if (!directForm.username || !directForm.name) {
-      toast.error("Please provide at least a Username and Name");
+      toast.error("Please enter a username and name");
       return;
     }
     setLoading(true);
@@ -63,13 +60,13 @@ const Login = () => {
       if (res?.error) {
         toast.error(res.error);
       } else {
-        toast.success(`Account @${res.username} created successfully! Redirecting to creator page...`);
+        toast.success(`Profile @${res.username} created successfully! Redirecting...`);
         setTimeout(() => {
           router.push(`/${res.username}`);
-        }, 1200);
+        }, 1000);
       }
     } catch (err) {
-      toast.error(err.message || "Failed to create creator account");
+      toast.error(err.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -78,7 +75,7 @@ const Login = () => {
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     if (!loginForm.identifier || !loginForm.password) {
-      toast.error("Please fill in both Phone/Username and Password");
+      toast.error("Please enter your login details");
       return;
     }
     setLoading(true);
@@ -90,13 +87,13 @@ const Login = () => {
       });
 
       if (res?.error) {
-        toast.error(res.error || "Login failed. Check your credentials.");
+        toast.error(res.error || "Invalid username or password");
       } else {
-        toast.success("Logged in successfully!");
+        toast.success("Welcome back!");
         router.push("/dashboard");
       }
     } catch (err) {
-      toast.error(err.message || "An unexpected error occurred");
+      toast.error(err.message || "Could not log in");
     } finally {
       setLoading(false);
     }
@@ -105,11 +102,11 @@ const Login = () => {
   const handleSignupSubmit = async (e) => {
     e.preventDefault();
     if (!signupForm.phone && !signupForm.username) {
-      toast.error("Please enter a Phone Number or Username");
+      toast.error("Phone number or username is required");
       return;
     }
     if (!signupForm.password || signupForm.password.length < 4) {
-      toast.error("Password must be at least 4 characters long");
+      toast.error("Password must be at least 4 characters");
       return;
     }
     setLoading(true);
@@ -131,7 +128,7 @@ const Login = () => {
         }
       }
     } catch (err) {
-      toast.error(err.message || "Failed to create account");
+      toast.error(err.message || "Registration failed");
     } finally {
       setLoading(false);
     }
@@ -141,7 +138,7 @@ const Login = () => {
     <>
       <ToastContainer
         position="top-right"
-        autoClose={5000}
+        autoClose={4000}
         hideProgressBar={false}
         newestOnTop={false}
         closeOnClick
@@ -152,182 +149,192 @@ const Login = () => {
         theme="dark"
         transition={Bounce}
       />
-      <div className='text-white py-10 container mx-auto px-4 min-h-[85vh] flex flex-col justify-center items-center'>
-        <h1 className='text-center font-bold text-3xl mb-2'>
-          {mode === 'direct' ? 'Create Creator Account' : mode === 'login' ? 'Welcome Back!' : 'Sign Up with Password'}
-        </h1>
-        <p className="text-gray-400 text-sm mb-6 text-center max-w-md">
-          {mode === 'direct'
-            ? 'No passwords or OTP required! Just fill in your creator details to launch your live page instantly.'
-            : 'Access your creator dashboard & payments.'}
-        </p>
+      <div className='min-h-[85vh] text-white py-12 px-4 container mx-auto flex flex-col justify-center items-center'>
+        
+        {/* Header */}
+        <div className="text-center mb-8 max-w-md">
+          <h1 className='text-3xl font-bold tracking-tight text-white mb-2'>
+            {mode === 'direct' ? 'Start Your Creator Page' : mode === 'login' ? 'Welcome Back' : 'Create an Account'}
+          </h1>
+          <p className="text-slate-400 text-sm">
+            {mode === 'direct'
+              ? 'Launch your page in seconds. No password or email verification needed.'
+              : 'Sign in to manage your supporter messages and payout options.'}
+          </p>
+        </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-xl w-full max-w-xl p-6">
-          {/* Mode Switcher Tabs */}
-          <div className="flex border-b border-slate-700 mb-6 text-xs md:text-sm">
+        {/* Card Container */}
+        <div className="bg-slate-900/90 border border-slate-800 backdrop-blur-md rounded-2xl shadow-2xl w-full max-w-lg p-6 md:p-8">
+          
+          {/* Segmented Mode Switcher */}
+          <div className="bg-slate-950 p-1 rounded-xl flex border border-slate-800/80 mb-6">
             <button
               onClick={() => setMode('direct')}
-              className={`flex-1 pb-3 text-center font-semibold transition border-b-2 ${
+              type="button"
+              className={`flex-1 py-2 px-3 text-xs font-medium rounded-lg transition-all ${
                 mode === 'direct'
-                  ? 'border-emerald-500 text-emerald-400'
-                  : 'border-transparent text-gray-400 hover:text-gray-200'
+                  ? 'bg-slate-800 text-white shadow-sm font-semibold'
+                  : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              ✨ Details Only (No Auth)
+              Instant Profile
             </button>
             <button
               onClick={() => setMode('login')}
-              className={`flex-1 pb-3 text-center font-semibold transition border-b-2 ${
+              type="button"
+              className={`flex-1 py-2 px-3 text-xs font-medium rounded-lg transition-all ${
                 mode === 'login'
-                  ? 'border-blue-500 text-blue-400'
-                  : 'border-transparent text-gray-400 hover:text-gray-200'
+                  ? 'bg-slate-800 text-white shadow-sm font-semibold'
+                  : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              📱 Phone / Password Login
+              Sign In
             </button>
             <button
               onClick={() => setMode('signup')}
-              className={`flex-1 pb-3 text-center font-semibold transition border-b-2 ${
+              type="button"
+              className={`flex-1 py-2 px-3 text-xs font-medium rounded-lg transition-all ${
                 mode === 'signup'
-                  ? 'border-purple-500 text-purple-400'
-                  : 'border-transparent text-gray-400 hover:text-gray-200'
+                  ? 'bg-slate-800 text-white shadow-sm font-semibold'
+                  : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              🔐 Register Account
+              New Account
             </button>
           </div>
 
-          {/* Mode 1: Details Only (No Auth, No OTP, No Password) */}
+          {/* Form 1: Instant Profile (Direct Details - No Auth) */}
           {mode === 'direct' && (
             <form onSubmit={handleDirectSubmit} className="space-y-4">
-              <div className="bg-emerald-950/40 border border-emerald-500/30 text-emerald-200 p-3 rounded-lg text-xs mb-3">
-                ⚡ <strong>Quick Creator Creation:</strong> Simply enter your username and details below to create your creator profile directly.
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-gray-300 mb-1">
-                    Username * <span className="text-gray-500">(Profile URL)</span>
+                  <label className="block text-xs font-medium text-slate-300 mb-1">
+                    Username <span className="text-rose-400">*</span>
                   </label>
                   <input
                     type="text"
                     name="username"
                     value={directForm.username}
                     onChange={handleDirectChange}
-                    placeholder="e.g. sumitkumar"
-                    className="w-full p-2.5 rounded-lg bg-slate-800 border border-slate-700 text-white placeholder-gray-500 text-xs focus:outline-none focus:border-emerald-500"
+                    placeholder="e.g. alex"
+                    className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white placeholder-slate-600 text-xs focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-gray-300 mb-1">
-                    Full Name *
+                  <label className="block text-xs font-medium text-slate-300 mb-1">
+                    Full Name <span className="text-rose-400">*</span>
                   </label>
                   <input
                     type="text"
                     name="name"
                     value={directForm.name}
                     onChange={handleDirectChange}
-                    placeholder="e.g. Sumit Kumar"
-                    className="w-full p-2.5 rounded-lg bg-slate-800 border border-slate-700 text-white placeholder-gray-500 text-xs focus:outline-none focus:border-emerald-500"
+                    placeholder="e.g. Alex Rivera"
+                    className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white placeholder-slate-600 text-xs focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition"
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-300 mb-1">
-                  Short Bio
+                <label className="block text-xs font-medium text-slate-300 mb-1">
+                  Bio / Tagline
                 </label>
                 <textarea
                   name="bio"
                   value={directForm.bio}
                   onChange={handleDirectChange}
                   rows={2}
-                  placeholder="Tell supporters what you do..."
-                  className="w-full p-2.5 rounded-lg bg-slate-800 border border-slate-700 text-white placeholder-gray-500 text-xs focus:outline-none focus:border-emerald-500"
+                  placeholder="Creating digital art & coding tutorials for indie devs."
+                  className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white placeholder-slate-600 text-xs focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition"
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-gray-300 mb-1">
-                    Profile Picture Image URL
+                  <label className="block text-xs font-medium text-slate-300 mb-1">
+                    Avatar Image URL
                   </label>
                   <input
                     type="text"
                     name="profilepic"
                     value={directForm.profilepic}
                     onChange={handleDirectChange}
-                    placeholder="https://example.com/avatar.jpg"
-                    className="w-full p-2.5 rounded-lg bg-slate-800 border border-slate-700 text-white placeholder-gray-500 text-xs focus:outline-none focus:border-emerald-500"
+                    placeholder="https://..."
+                    className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white placeholder-slate-600 text-xs focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-gray-300 mb-1">
-                    Cover Banner Image URL
+                  <label className="block text-xs font-medium text-slate-300 mb-1">
+                    Banner Cover URL
                   </label>
                   <input
                     type="text"
                     name="coverpic"
                     value={directForm.coverpic}
                     onChange={handleDirectChange}
-                    placeholder="https://example.com/cover.jpg"
-                    className="w-full p-2.5 rounded-lg bg-slate-800 border border-slate-700 text-white placeholder-gray-500 text-xs focus:outline-none focus:border-emerald-500"
+                    placeholder="https://..."
+                    className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white placeholder-slate-600 text-xs focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition"
                   />
                 </div>
               </div>
 
-              <div className="pt-2 border-t border-slate-800">
-                <h4 className="text-xs font-semibold text-emerald-400 mb-2">Social Links</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <div className="pt-2 border-t border-slate-800/80">
+                <label className="block text-xs font-semibold text-slate-400 mb-2">
+                  Social Links
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <input
                     type="text"
                     name="twitter"
                     value={directForm.twitter}
                     onChange={handleDirectChange}
-                    placeholder="Twitter/X URL"
-                    className="w-full p-2 rounded-lg bg-slate-800 border border-slate-700 text-white placeholder-gray-500 text-xs"
+                    placeholder="Twitter / X Link"
+                    className="w-full px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-white placeholder-slate-600 text-xs focus:outline-none focus:border-blue-500 transition"
                   />
                   <input
                     type="text"
                     name="youtube"
                     value={directForm.youtube}
                     onChange={handleDirectChange}
-                    placeholder="YouTube URL"
-                    className="w-full p-2 rounded-lg bg-slate-800 border border-slate-700 text-white placeholder-gray-500 text-xs"
+                    placeholder="YouTube Channel"
+                    className="w-full px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-white placeholder-slate-600 text-xs focus:outline-none focus:border-blue-500 transition"
                   />
                   <input
                     type="text"
                     name="linkedin"
                     value={directForm.linkedin}
                     onChange={handleDirectChange}
-                    placeholder="LinkedIn URL"
-                    className="w-full p-2 rounded-lg bg-slate-800 border border-slate-700 text-white placeholder-gray-500 text-xs"
+                    placeholder="LinkedIn Profile"
+                    className="w-full px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-white placeholder-slate-600 text-xs focus:outline-none focus:border-blue-500 transition"
                   />
                   <input
                     type="text"
                     name="portfolio"
                     value={directForm.portfolio}
                     onChange={handleDirectChange}
-                    placeholder="Portfolio URL"
-                    className="w-full p-2 rounded-lg bg-slate-800 border border-slate-700 text-white placeholder-gray-500 text-xs"
+                    placeholder="Website / Portfolio"
+                    className="w-full px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-white placeholder-slate-600 text-xs focus:outline-none focus:border-blue-500 transition"
                   />
                 </div>
               </div>
 
-              <div className="pt-2 border-t border-slate-800">
-                <h4 className="text-xs font-semibold text-emerald-400 mb-2">Payment Setup (Razorpay)</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <div className="pt-2 border-t border-slate-800/80">
+                <label className="block text-xs font-semibold text-slate-400 mb-2">
+                  Razorpay Credentials <span className="text-slate-500 font-normal">(Optional for now)</span>
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <input
                     type="text"
                     name="razorpayid"
                     value={directForm.razorpayid}
                     onChange={handleDirectChange}
                     placeholder="Razorpay Key ID"
-                    className="w-full p-2 rounded-lg bg-slate-800 border border-slate-700 text-white placeholder-gray-500 text-xs"
+                    className="w-full px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-white placeholder-slate-600 text-xs focus:outline-none focus:border-blue-500 transition"
                   />
                   <input
                     type="text"
@@ -335,7 +342,7 @@ const Login = () => {
                     value={directForm.razorpaysecret}
                     onChange={handleDirectChange}
                     placeholder="Razorpay Key Secret"
-                    className="w-full p-2 rounded-lg bg-slate-800 border border-slate-700 text-white placeholder-gray-500 text-xs"
+                    className="w-full px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-white placeholder-slate-600 text-xs focus:outline-none focus:border-blue-500 transition"
                   />
                 </div>
               </div>
@@ -343,18 +350,18 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-bold rounded-lg shadow-lg transition disabled:opacity-50 text-sm mt-4"
+                className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl shadow-lg shadow-blue-600/20 transition-all disabled:opacity-50 text-xs sm:text-sm mt-3"
               >
-                {loading ? "Creating Account..." : "Create Account & View Profile"}
+                {loading ? "Creating Page..." : "Create Profile Page →"}
               </button>
             </form>
           )}
 
-          {/* Mode 2: Phone / Password Login */}
+          {/* Form 2: Sign In (Phone / Password or Username) */}
           {mode === 'login' && (
             <form onSubmit={handleLoginSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-gray-300 mb-1">
+                <label className="block text-xs font-medium text-slate-300 mb-1">
                   Phone Number or Username
                 </label>
                 <input
@@ -362,14 +369,14 @@ const Login = () => {
                   name="identifier"
                   value={loginForm.identifier}
                   onChange={handleLoginChange}
-                  placeholder="e.g. 9876543210 or creator123"
-                  className="w-full p-3 rounded-lg bg-slate-800 border border-slate-700 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-blue-500"
+                  placeholder="Enter phone number or username"
+                  className="w-full px-3 py-2.5 rounded-lg bg-slate-950 border border-slate-800 text-white placeholder-slate-600 text-xs sm:text-sm focus:outline-none focus:border-blue-500 transition"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-300 mb-1">
+                <label className="block text-xs font-medium text-slate-300 mb-1">
                   Password
                 </label>
                 <input
@@ -377,8 +384,8 @@ const Login = () => {
                   name="password"
                   value={loginForm.password}
                   onChange={handleLoginChange}
-                  placeholder="Enter your password"
-                  className="w-full p-3 rounded-lg bg-slate-800 border border-slate-700 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-blue-500"
+                  placeholder="Enter password"
+                  className="w-full px-3 py-2.5 rounded-lg bg-slate-950 border border-slate-800 text-white placeholder-slate-600 text-xs sm:text-sm focus:outline-none focus:border-blue-500 transition"
                   required
                 />
               </div>
@@ -386,18 +393,18 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-lg shadow-md transition disabled:opacity-50 text-sm"
+                className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl shadow-lg shadow-blue-600/20 transition-all disabled:opacity-50 text-xs sm:text-sm"
               >
-                {loading ? "Logging in..." : "Login to Dashboard"}
+                {loading ? "Signing in..." : "Sign In"}
               </button>
             </form>
           )}
 
-          {/* Mode 3: Register Account with Password */}
+          {/* Form 3: New Account with Password */}
           {mode === 'signup' && (
             <form onSubmit={handleSignupSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-gray-300 mb-1">
+                <label className="block text-xs font-medium text-slate-300 mb-1">
                   Phone Number
                 </label>
                 <input
@@ -406,13 +413,13 @@ const Login = () => {
                   value={signupForm.phone}
                   onChange={handleSignupChange}
                   placeholder="e.g. 9876543210"
-                  className="w-full p-3 rounded-lg bg-slate-800 border border-slate-700 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-purple-500"
+                  className="w-full px-3 py-2.5 rounded-lg bg-slate-950 border border-slate-800 text-white placeholder-slate-600 text-xs sm:text-sm focus:outline-none focus:border-blue-500 transition"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-300 mb-1">
+                <label className="block text-xs font-medium text-slate-300 mb-1">
                   Username
                 </label>
                 <input
@@ -420,14 +427,14 @@ const Login = () => {
                   name="username"
                   value={signupForm.username}
                   onChange={handleSignupChange}
-                  placeholder="e.g. piyushraj"
-                  className="w-full p-3 rounded-lg bg-slate-800 border border-slate-700 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-purple-500"
+                  placeholder="e.g. alex"
+                  className="w-full px-3 py-2.5 rounded-lg bg-slate-950 border border-slate-800 text-white placeholder-slate-600 text-xs sm:text-sm focus:outline-none focus:border-blue-500 transition"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-300 mb-1">
+                <label className="block text-xs font-medium text-slate-300 mb-1">
                   Create Password
                 </label>
                 <input
@@ -436,7 +443,7 @@ const Login = () => {
                   value={signupForm.password}
                   onChange={handleSignupChange}
                   placeholder="At least 4 characters"
-                  className="w-full p-3 rounded-lg bg-slate-800 border border-slate-700 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-purple-500"
+                  className="w-full px-3 py-2.5 rounded-lg bg-slate-950 border border-slate-800 text-white placeholder-slate-600 text-xs sm:text-sm focus:outline-none focus:border-blue-500 transition"
                   required
                 />
               </div>
@@ -444,28 +451,28 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 bg-purple-600 hover:bg-purple-500 text-white font-medium rounded-lg shadow-md transition disabled:opacity-50 text-sm"
+                className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl shadow-lg shadow-blue-600/20 transition-all disabled:opacity-50 text-xs sm:text-sm"
               >
-                {loading ? "Creating Account..." : "Create Account with Password"}
+                {loading ? "Creating Account..." : "Create Account"}
               </button>
             </form>
           )}
 
-          {/* Social Logins Separator */}
+          {/* Social Sign-in Divider */}
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-slate-800"></div>
             </div>
             <div className="relative flex justify-center text-xs">
-              <span className="bg-slate-900 px-3 text-gray-400">Or continue with OAuth</span>
+              <span className="bg-slate-900 px-3 text-slate-400 font-medium">Or continue with</span>
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+          <div className="grid grid-cols-2 gap-3">
             <button
               onClick={() => signIn("google")}
               type="button"
-              className="flex items-center justify-center w-full bg-slate-50 text-black border border-gray-300 rounded-lg shadow-md py-2 px-4 text-xs font-medium hover:bg-gray-200 focus:outline-none transition"
+              className="flex items-center justify-center py-2.5 px-4 bg-slate-950 hover:bg-slate-800/80 border border-slate-800 text-slate-200 rounded-xl text-xs font-medium transition shadow-sm"
             >
               <svg className="h-4 w-4 mr-2" viewBox="-0.5 0 48 48">
                 <g fill="none" fillRule="evenodd">
@@ -481,7 +488,7 @@ const Login = () => {
             <button
               onClick={() => signIn("github")}
               type="button"
-              className="flex items-center justify-center w-full bg-slate-800 text-white border border-slate-700 rounded-lg shadow-md py-2 px-4 text-xs font-medium hover:bg-slate-700 focus:outline-none transition"
+              className="flex items-center justify-center py-2.5 px-4 bg-slate-950 hover:bg-slate-800/80 border border-slate-800 text-slate-200 rounded-xl text-xs font-medium transition shadow-sm"
             >
               <svg className="h-4 w-4 mr-2 fill-current" viewBox="0 0 24 24">
                 <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
@@ -489,6 +496,7 @@ const Login = () => {
               <span>GitHub</span>
             </button>
           </div>
+
         </div>
       </div>
     </>
