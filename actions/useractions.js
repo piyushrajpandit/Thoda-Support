@@ -76,17 +76,28 @@ export const fetchpayments = async (username) => {
 export const updateProfile = async (data, oldusername) => {
     await connectDb()
     let ndata = typeof data.entries === 'function' ? Object.fromEntries(data) : data
+    let decodedOld = decodeURIComponent(oldusername).trim()
+    let regexOld = new RegExp(`^${decodedOld.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`, 'i')
+
+    const searchCriteria = {
+        $or: [
+            { username: oldusername },
+            { username: decodedOld },
+            { username: regexOld },
+            ...(ndata.email ? [{ email: ndata.email }] : [])
+        ]
+    }
 
     // If username is being changed, check availability
-    if (oldusername !== ndata.username) {
-        let u = await User.findOne({ username: ndata.username })
-        if (u) {
+    if (oldusername !== ndata.username && decodedOld !== ndata.username?.trim()) {
+        let u = await User.findOne({ username: ndata.username?.trim() })
+        if (u && u.email !== ndata.email) {
             return { error: "Username already exists" }
         }
-        await User.updateOne({ email: ndata.email }, ndata)
-        await Payment.updateMany({ to_user: oldusername }, { to_user: ndata.username })
+        await User.updateOne(searchCriteria, ndata)
+        await Payment.updateMany({ to_user: { $in: [oldusername, decodedOld, regexOld] } }, { to_user: ndata.username })
     } else {
-        await User.updateOne({ email: ndata.email }, ndata)
+        await User.updateOne(searchCriteria, ndata)
     }
 
     return { success: true }
