@@ -45,9 +45,43 @@ const Dashboard = () => {
         setform({ ...form, [e.target.name]: e.target.value })
     }
 
+    const handleFileChange = (e, fieldName) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+        const reader = new FileReader()
+        reader.onload = (event) => {
+            const img = new Image()
+            img.onload = () => {
+                const canvas = document.createElement('canvas')
+                let maxDim = fieldName === 'coverpic' ? 1200 : 400
+                let width = img.width
+                let height = img.height
+
+                if (width > maxDim || height > maxDim) {
+                    if (width > height) {
+                        height = Math.round((height * maxDim) / width)
+                        width = maxDim
+                    } else {
+                        width = Math.round((width * maxDim) / height)
+                        height = maxDim
+                    }
+                }
+
+                canvas.width = width
+                canvas.height = height
+                const ctx = canvas.getContext('2d')
+                ctx.drawImage(img, 0, 0, width, height)
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.85)
+                setform((prev) => ({ ...prev, [fieldName]: dataUrl }))
+            }
+            img.src = event.target.result
+        }
+        reader.readAsDataURL(file)
+    }
+
     const handleSubmit = async (formData) => {
         if (!session?.user?.name) return;
-        let res = await updateProfile(formData, session.user.name)
+        let res = await updateProfile({ ...form, ...Object.fromEntries(formData) }, session.user.name)
         if (res?.error) {
             toast.error(res.error, {
                 position: "top-right",
@@ -106,13 +140,57 @@ const Dashboard = () => {
                         <label htmlFor="bio" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Short Bio</label>
                         <textarea value={form.bio || ""} onChange={handleChange} rows={2} name='bio' id="bio" placeholder="Tell your supporters about yourself..." className="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
                     </div>
-                    <div className="my-2">
-                        <label htmlFor="profilepic" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Profile Picture URL</label>
-                        <input value={form.profilepic || ""} onChange={handleChange} type="text" name='profilepic' id="profilepic" className="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+
+                    {/* Profile Picture Upload & URL */}
+                    <div className="my-4">
+                        <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Profile Picture</label>
+                        <div className="flex flex-col sm:flex-row gap-3 items-center">
+                            {form.profilepic && (
+                                <img src={form.profilepic} alt="Profile Preview" className="w-14 h-14 rounded-full object-cover border-2 border-blue-500 flex-shrink-0" />
+                            )}
+                            <div className="flex-1 w-full space-y-2">
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) => handleFileChange(e, 'profilepic')}
+                                    className="block w-full text-xs text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer"
+                                />
+                                <input
+                                    value={form.profilepic || ""}
+                                    onChange={handleChange}
+                                    type="text"
+                                    name='profilepic'
+                                    id="profilepic"
+                                    placeholder="Or paste Profile Picture Image URL..."
+                                    className="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                                />
+                            </div>
+                        </div>
                     </div>
-                    <div className="my-2">
-                        <label htmlFor="coverpic" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Cover Picture URL</label>
-                        <input value={form.coverpic || ""} onChange={handleChange} type="text" name='coverpic' id="coverpic" className="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" />
+
+                    {/* Cover Picture Upload & URL */}
+                    <div className="my-4">
+                        <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Cover Banner Picture</label>
+                        <div className="flex flex-col gap-2">
+                            {form.coverpic && (
+                                <img src={form.coverpic} alt="Cover Preview" className="w-full h-24 rounded-lg object-cover border border-gray-700" />
+                            )}
+                            <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => handleFileChange(e, 'coverpic')}
+                                className="block w-full text-xs text-gray-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer"
+                            />
+                            <input
+                                value={form.coverpic || ""}
+                                onChange={handleChange}
+                                type="text"
+                                name='coverpic'
+                                id="coverpic"
+                                placeholder="Or paste Cover Banner Image URL..."
+                                className="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                            />
+                        </div>
                     </div>
 
                     <div className="my-4 pt-3 border-t border-gray-700">

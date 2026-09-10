@@ -40,6 +40,40 @@ const Login = () => {
     setDirectForm({ ...directForm, [e.target.name]: e.target.value });
   };
 
+  const handleFileChange = (e, fieldName) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      const img = new Image()
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        let maxDim = fieldName === 'coverpic' ? 1200 : 400
+        let width = img.width
+        let height = img.height
+
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width)
+            width = maxDim
+          } else {
+            width = Math.round((width * maxDim) / height)
+            height = maxDim
+          }
+        }
+
+        canvas.width = width
+        canvas.height = height
+        const ctx = canvas.getContext('2d')
+        ctx.drawImage(img, 0, 0, width, height)
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.85)
+        setDirectForm((prev) => ({ ...prev, [fieldName]: dataUrl }))
+      }
+      img.src = event.target.result
+    }
+    reader.readAsDataURL(file)
+  }
+
   const handleLoginChange = (e) => {
     setLoginForm({ ...loginForm, [e.target.name]: e.target.value });
   };
@@ -158,7 +192,7 @@ const Login = () => {
           </h1>
           <p className="text-slate-400 text-sm">
             {mode === 'direct'
-              ? 'Launch your page in seconds. No password or email verification needed.'
+              ? 'Launch your page in seconds. Upload your photos and fill in your details.'
               : 'Sign in to manage your supporter messages and payout options.'}
           </p>
         </div>
@@ -253,32 +287,56 @@ const Login = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">
-                    Avatar Image URL
-                  </label>
-                  <input
-                    type="text"
-                    name="profilepic"
-                    value={directForm.profilepic}
-                    onChange={handleDirectChange}
-                    placeholder="https://..."
-                    className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white placeholder-slate-600 text-xs focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition"
-                  />
+              {/* Profile Picture Upload & Preview */}
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1">
+                  Upload Profile Picture
+                </label>
+                <div className="flex items-center gap-3">
+                  {directForm.profilepic && (
+                    <img src={directForm.profilepic} alt="Avatar Preview" className="w-12 h-12 rounded-full object-cover border border-blue-500 flex-shrink-0" />
+                  )}
+                  <div className="flex-1 space-y-1.5">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleFileChange(e, 'profilepic')}
+                      className="block w-full text-xs text-slate-400 file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-xs file:font-medium file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      name="profilepic"
+                      value={directForm.profilepic}
+                      onChange={handleDirectChange}
+                      placeholder="Or paste profile image URL..."
+                      className="w-full px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-white placeholder-slate-600 text-xs focus:outline-none focus:border-blue-500 transition"
+                    />
+                  </div>
                 </div>
+              </div>
 
-                <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">
-                    Banner Cover URL
-                  </label>
+              {/* Cover Banner Upload & Preview */}
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1">
+                  Upload Cover Banner
+                </label>
+                <div className="space-y-1.5">
+                  {directForm.coverpic && (
+                    <img src={directForm.coverpic} alt="Cover Preview" className="w-full h-16 rounded-lg object-cover border border-slate-800" />
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleFileChange(e, 'coverpic')}
+                    className="block w-full text-xs text-slate-400 file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-xs file:font-medium file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer"
+                  />
                   <input
                     type="text"
                     name="coverpic"
                     value={directForm.coverpic}
                     onChange={handleDirectChange}
-                    placeholder="https://..."
-                    className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white placeholder-slate-600 text-xs focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition"
+                    placeholder="Or paste banner image URL..."
+                    className="w-full px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-white placeholder-slate-600 text-xs focus:outline-none focus:border-blue-500 transition"
                   />
                 </div>
               </div>
