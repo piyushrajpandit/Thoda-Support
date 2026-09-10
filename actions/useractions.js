@@ -153,3 +153,47 @@ export const registerUser = async ({ phone, username, name, password, email }) =
 
     return { success: true }
 }
+
+export const createCreatorDirect = async (formData) => {
+    await connectDb()
+    let data = typeof formData.entries === 'function' ? Object.fromEntries(formData) : formData
+    let username = data.username ? data.username.trim() : ""
+
+    if (!username || username.length < 2) {
+        return { error: "Username is required (at least 2 characters)" }
+    }
+
+    let decoded = decodeURIComponent(username)
+    let clean = decoded.trim()
+    let regex = new RegExp(`^${clean.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`, 'i')
+
+    let existing = await User.findOne({
+        $or: [
+            { username: username },
+            { username: decoded },
+            { username: clean },
+            { username: regex }
+        ]
+    })
+
+    if (existing) {
+        return { error: `Username '${username}' is already taken. Please choose another username.` }
+    }
+
+    let newUser = await User.create({
+        username: username,
+        name: data.name || username,
+        email: data.email || `${username}@thodasupport.local`,
+        profilepic: data.profilepic || "",
+        coverpic: data.coverpic || "",
+        bio: data.bio || "",
+        twitter: data.twitter || "",
+        youtube: data.youtube || "",
+        linkedin: data.linkedin || "",
+        portfolio: data.portfolio || "",
+        razorpayid: data.razorpayid || "",
+        razorpaysecret: data.razorpaysecret || ""
+    })
+
+    return { success: true, username: newUser.username }
+}
