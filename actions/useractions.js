@@ -73,6 +73,8 @@ export const fetchpayments = async (username) => {
     return JSON.parse(JSON.stringify(p))
 }
 
+import bcrypt from 'bcryptjs'
+
 export const updateProfile = async (data, oldusername) => {
     await connectDb()
     let ndata = typeof data.entries === 'function' ? Object.fromEntries(data) : data
@@ -99,6 +101,55 @@ export const updateProfile = async (data, oldusername) => {
     } else {
         await User.updateOne(searchCriteria, ndata)
     }
+
+    return { success: true }
+}
+
+export const registerUser = async ({ phone, username, name, password, email }) => {
+    await connectDb()
+    let cleanPhone = phone ? phone.trim() : ""
+    let cleanUsername = username ? username.trim() : ""
+
+    if (!cleanPhone && !cleanUsername) {
+        return { error: "Phone number or Username is required" }
+    }
+    if (!password || password.length < 4) {
+        return { error: "Password must be at least 4 characters long" }
+    }
+
+    // Default username to phone if missing
+    if (!cleanUsername) cleanUsername = cleanPhone
+    // Default email if missing
+    let cleanEmail = email && email.trim() ? email.trim() : `${cleanUsername}@thodasupport.local`
+
+    // Check if phone or username already registered
+    let existingUser = await User.findOne({
+        $or: [
+            ...(cleanPhone ? [{ phone: cleanPhone }] : []),
+            { username: cleanUsername },
+            { email: cleanEmail }
+        ]
+    })
+
+    if (existingUser) {
+        if (cleanPhone && existingUser.phone === cleanPhone) {
+            return { error: "Phone number already registered. Please login instead." }
+        }
+        if (existingUser.username === cleanUsername) {
+            return { error: "Username already taken. Please choose another." }
+        }
+        return { error: "Account with these details already exists." }
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10)
+
+    await User.create({
+        phone: cleanPhone,
+        username: cleanUsername,
+        name: name || cleanUsername,
+        password: hashedPassword,
+        email: cleanEmail
+    })
 
     return { success: true }
 }
