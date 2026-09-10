@@ -45,16 +45,13 @@ const PaymentPage = ({ username }) => {
     }
 
     const pay = async (amountInPaise) => {
-        if (!currentUser?.razorpayid) {
-            toast.error("This creator has not configured their Razorpay credentials yet.");
-            return;
-        }
-
         try {
             let a = await initiate(amountInPaise, username, paymentform)
             let orderId = a.id
+            let razorpayKey = a.key_id || currentUser?.razorpayid || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_demoKey"
+
             var options = {
-                "key": currentUser.razorpayid,
+                "key": razorpayKey,
                 "amount": amountInPaise,
                 "currency": "INR",
                 "name": "Thoda Support",
@@ -176,32 +173,32 @@ const PaymentPage = ({ username }) => {
                         <h2 className='text-2xl font-bold my-5'>Make a Payment</h2>
                         
                         {!currentUser?.razorpayid && (
-                            <div className="bg-yellow-900/50 border border-yellow-500/50 text-yellow-200 px-4 py-3 rounded-lg mb-4 text-sm text-center">
-                                ⚠️ <strong>Notice:</strong> @{username} has not provided their payment details (Razorpay Key ID & Secret) yet. Payments are currently unavailable for this creator.
+                            <div className="bg-blue-950/60 border border-blue-500/40 text-blue-200 px-3 py-2 rounded-lg mb-4 text-xs text-center">
+                                ℹ️ <strong>Demo Payment Mode:</strong> Creator hasn&apos;t set custom keys yet. Payments will use platform default Razorpay keys.
                             </div>
                         )}
 
                         <div className='flex gap-2 flex-col'>
                             <div>
-                                <input onChange={handleChange} value={paymentform.name} name='name' type="text" className='w-full p-3 rounded-lg bg-slate-800' placeholder='Enter Name' disabled={!currentUser?.razorpayid} />
+                                <input onChange={handleChange} value={paymentform.name} name='name' type="text" className='w-full p-3 rounded-lg bg-slate-800 text-white placeholder-slate-400' placeholder='Enter Name' />
                             </div>
-                            <input onChange={handleChange} value={paymentform.message} name='message' type="text" className='w-full p-3 rounded-lg bg-slate-800' placeholder='Enter Message' disabled={!currentUser?.razorpayid} />
-                            <input onChange={handleChange} value={paymentform.amount} name="amount" type="text" className='w-full p-3 rounded-lg bg-slate-800' placeholder='Enter Amount in ₹' disabled={!currentUser?.razorpayid} />
+                            <input onChange={handleChange} value={paymentform.message} name='message' type="text" className='w-full p-3 rounded-lg bg-slate-800 text-white placeholder-slate-400' placeholder='Enter Message' />
+                            <input onChange={handleChange} value={paymentform.amount} name="amount" type="text" className='w-full p-3 rounded-lg bg-slate-800 text-white placeholder-slate-400' placeholder='Enter Amount in ₹' />
 
                             <button
                                 onClick={() => pay(Number.parseInt(paymentform.amount) * 100)}
                                 type="button"
                                 className="text-white bg-gradient-to-br from-purple-900 to-blue-900 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2 disabled:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                                disabled={!currentUser?.razorpayid || !paymentform.name || paymentform.name.length < 3 || !paymentform.message || paymentform.message.length < 4 || !paymentform.amount || Number.isNaN(Number(paymentform.amount)) || Number(paymentform.amount) <= 0}
+                                disabled={!paymentform.name || paymentform.name.length < 3 || !paymentform.message || paymentform.message.length < 4 || !paymentform.amount || Number.isNaN(Number(paymentform.amount)) || Number(paymentform.amount) <= 0}
                             >
                                 Pay
                             </button>
                         </div>
 
                         <div className='flex flex-col md:flex-row gap-2 mt-5'>
-                            <button className='bg-slate-800 p-3 rounded-lg hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed' onClick={() => pay(1000)} disabled={!currentUser?.razorpayid}>Pay ₹10</button>
-                            <button className='bg-slate-800 p-3 rounded-lg hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed' onClick={() => pay(2000)} disabled={!currentUser?.razorpayid}>Pay ₹20</button>
-                            <button className='bg-slate-800 p-3 rounded-lg hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed' onClick={() => pay(3000)} disabled={!currentUser?.razorpayid}>Pay ₹30</button>
+                            <button className='bg-slate-800 p-3 rounded-lg hover:bg-slate-700' onClick={() => pay(1000)}>Pay ₹10</button>
+                            <button className='bg-slate-800 p-3 rounded-lg hover:bg-slate-700' onClick={() => pay(2000)}>Pay ₹20</button>
+                            <button className='bg-slate-800 p-3 rounded-lg hover:bg-slate-700' onClick={() => pay(3000)}>Pay ₹30</button>
                         </div>
                     </div>
                 </div>

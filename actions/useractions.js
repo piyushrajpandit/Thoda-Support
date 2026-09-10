@@ -18,11 +18,14 @@ export const initiate = async (amount, to_username, paymentform) => {
             { username: regex }
         ]
     })
-    if (!user || !user.razorpayid || !user.razorpaysecret) {
-        throw new Error("User has not setup Razorpay credentials properly.")
+    if (!user) {
+        throw new Error("User not found.")
     }
 
-    const instance = new Razorpay({ key_id: user.razorpayid, key_secret: user.razorpaysecret })
+    const key_id = user.razorpayid || process.env.RAZORPAY_KEY_ID || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_fallbackKey"
+    const key_secret = user.razorpaysecret || process.env.RAZORPAY_KEY_SECRET || "fallbackSecretKey"
+
+    const instance = new Razorpay({ key_id, key_secret })
 
     let options = {
         amount: Number.parseInt(amount), // amount in paise
@@ -40,7 +43,7 @@ export const initiate = async (amount, to_username, paymentform) => {
         message: paymentform.message
     })
 
-    return JSON.parse(JSON.stringify(x))
+    return JSON.parse(JSON.stringify({ ...x, key_id }))
 }
 
 export const fetchuser = async (username) => {
