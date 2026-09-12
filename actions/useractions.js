@@ -157,6 +157,8 @@ export const registerUser = async ({ phone, username, name, password, email }) =
     return { success: true }
 }
 
+import Message from "@/models/Message"
+
 export const createCreatorDirect = async (formData) => {
     await connectDb()
     let data = typeof formData.entries === 'function' ? Object.fromEntries(formData) : formData
@@ -199,4 +201,56 @@ export const createCreatorDirect = async (formData) => {
     })
 
     return { success: true, username: newUser.username }
+}
+
+export const sendMessageToCreator = async ({ to_user, from_name, from_email, message }) => {
+    await connectDb()
+    if (!to_user || !from_name || !message) {
+        return { error: "Please enter your name and message." }
+    }
+
+    let decoded = decodeURIComponent(to_user).trim()
+    let clean = decoded.trim()
+    let regex = new RegExp(`^${clean.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`, 'i')
+
+    let user = await User.findOne({
+        $or: [
+            { username: to_user },
+            { username: decoded },
+            { username: clean },
+            { username: regex }
+        ]
+    })
+
+    if (!user) {
+        return { error: "Creator not found." }
+    }
+
+    let newMsg = await Message.create({
+        to_user: user.username,
+        from_name: from_name.trim(),
+        from_email: from_email ? from_email.trim() : "",
+        message: message.trim()
+    })
+
+    return { success: true, messageId: newMsg._id.toString() }
+}
+
+export const fetchCreatorMessages = async (username) => {
+    await connectDb()
+    let decoded = decodeURIComponent(username).trim()
+    let clean = decoded.trim()
+    let regex = new RegExp(`^${clean.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`, 'i')
+
+    let messages = await Message.find({
+        to_user: { $in: [username, decoded, clean, regex] }
+    }).sort({ createdAt: -1 }).lean()
+
+    return JSON.parse(JSON.stringify(messages))
+}
+
+export const markMessageAsRead = async (messageId) => {
+    await connectDb()
+    await Message.findByIdAndUpdate(messageId, { read: true })
+    return { success: true }
 }

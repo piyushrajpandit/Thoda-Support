@@ -1,7 +1,7 @@
 "use client"
 import React, { useEffect, useState } from 'react'
 import Script from 'next/script'
-import { fetchuser, fetchpayments, initiate } from '@/actions/useractions'
+import { fetchuser, fetchpayments, initiate, sendMessageToCreator } from '@/actions/useractions'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { ToastContainer, toast, Bounce } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -12,6 +12,11 @@ const PaymentPage = ({ username }) => {
     const [payments, setPayments] = useState([])
     const searchParams = useSearchParams()
     const router = useRouter()
+
+    // Chat modal state
+    const [showChatModal, setShowChatModal] = useState(false)
+    const [chatForm, setChatForm] = useState({ name: "", email: "", message: "" })
+    const [sendingMsg, setSendingMsg] = useState(false)
 
     useEffect(() => {
         getData()
@@ -35,6 +40,39 @@ const PaymentPage = ({ username }) => {
 
     const handleChange = (e) => {
         setPaymentform({ ...paymentform, [e.target.name]: e.target.value })
+    }
+
+    const handleChatChange = (e) => {
+        setChatForm({ ...chatForm, [e.target.name]: e.target.value })
+    }
+
+    const handleSendMessage = async (e) => {
+        e.preventDefault()
+        if (!chatForm.name || !chatForm.message) {
+            toast.error("Please enter your name and message")
+            return
+        }
+        setSendingMsg(true)
+        try {
+            const res = await sendMessageToCreator({
+                to_user: username,
+                from_name: chatForm.name,
+                from_email: chatForm.email,
+                message: chatForm.message
+            })
+
+            if (res?.error) {
+                toast.error(res.error)
+            } else {
+                toast.success(`Message sent to @${username}!`)
+                setChatForm({ name: "", email: "", message: "" })
+                setShowChatModal(false)
+            }
+        } catch (err) {
+            toast.error(err.message || "Failed to send message")
+        } finally {
+            setSendingMsg(false)
+        }
     }
 
     const getData = async () => {
@@ -111,7 +149,7 @@ const PaymentPage = ({ username }) => {
             </div>
 
             <div className="info flex justify-center items-center my-24 mb-32 flex-col gap-2 px-4">
-                <div className='font-bold text-xl'>
+                <div className='font-bold text-xl flex items-center gap-2'>
                     @{username}
                 </div>
 
@@ -121,7 +159,7 @@ const PaymentPage = ({ username }) => {
                     </p>
                 )}
 
-                <div className='flex gap-3 my-1 items-center'>
+                <div className='flex gap-3 my-1 items-center flex-wrap justify-center'>
                     {currentUser?.twitter && (
                         <a href={currentUser.twitter} target="_blank" rel="noopener noreferrer" title="Twitter / X" className="bg-slate-800 hover:bg-blue-600 p-2 rounded-full text-white transition">
                             <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
@@ -142,6 +180,14 @@ const PaymentPage = ({ username }) => {
                             <svg className="w-4 h-4 fill-none stroke-current stroke-2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
                         </a>
                     )}
+
+                    {/* Chat Button */}
+                    <button
+                        onClick={() => setShowChatModal(true)}
+                        className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-3 py-1.5 rounded-full transition shadow-md"
+                    >
+                        💬 Chat with @{username}
+                    </button>
                 </div>
 
                 <div className='text-slate-400'>
@@ -203,6 +249,92 @@ const PaymentPage = ({ username }) => {
                     </div>
                 </div>
             </div>
+
+            {/* Floating Chat Widget Button (Bottom-Right Corner) */}
+            <button
+                onClick={() => setShowChatModal(true)}
+                className="fixed bottom-6 right-6 z-40 bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 rounded-full shadow-2xl hover:scale-105 transition-all flex items-center gap-2 border border-blue-400/30"
+                title={`Send message to @${username}`}
+            >
+                <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                    <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/>
+                </svg>
+                <span className="text-xs font-semibold hidden md:inline">Message @{username}</span>
+            </button>
+
+            {/* Chat Modal */}
+            {showChatModal && (
+                <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="bg-slate-900 border border-slate-800 w-full max-w-md rounded-2xl shadow-2xl p-6 relative animate-in fade-in zoom-in duration-200">
+                        <button
+                            onClick={() => setShowChatModal(false)}
+                            className="absolute top-4 right-4 text-gray-400 hover:text-white text-lg font-bold"
+                        >
+                            ✕
+                        </button>
+                        
+                        <div className="flex items-center gap-3 mb-4 border-b border-slate-800 pb-3">
+                            <img
+                                src={currentUser?.profilepic || "/man.webp"}
+                                alt="avatar"
+                                className="w-10 h-10 rounded-full object-cover border border-blue-500"
+                            />
+                            <div>
+                                <h3 className="font-bold text-white text-base">Send Message to @{username}</h3>
+                                <p className="text-gray-400 text-xs">Direct private note to creator</p>
+                            </div>
+                        </div>
+
+                        <form onSubmit={handleSendMessage} className="space-y-3">
+                            <div>
+                                <label className="block text-xs font-medium text-gray-300 mb-1">Your Name *</label>
+                                <input
+                                    type="text"
+                                    name="name"
+                                    value={chatForm.name}
+                                    onChange={handleChatChange}
+                                    placeholder="Enter your name"
+                                    className="w-full p-2.5 rounded-lg bg-slate-800 border border-slate-700 text-white placeholder-gray-500 text-xs focus:outline-none focus:border-blue-500"
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-medium text-gray-300 mb-1">Your Email or Social Handle (Optional)</label>
+                                <input
+                                    type="text"
+                                    name="email"
+                                    value={chatForm.email}
+                                    onChange={handleChatChange}
+                                    placeholder="you@example.com or @twitter"
+                                    className="w-full p-2.5 rounded-lg bg-slate-800 border border-slate-700 text-white placeholder-gray-500 text-xs focus:outline-none focus:border-blue-500"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-medium text-gray-300 mb-1">Message *</label>
+                                <textarea
+                                    name="message"
+                                    value={chatForm.message}
+                                    onChange={handleChatChange}
+                                    rows={4}
+                                    placeholder={`Write your message for @${username}...`}
+                                    className="w-full p-2.5 rounded-lg bg-slate-800 border border-slate-700 text-white placeholder-gray-500 text-xs focus:outline-none focus:border-blue-500"
+                                    required
+                                />
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={sendingMsg}
+                                className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-lg shadow-md transition disabled:opacity-50 text-xs font-semibold"
+                            >
+                                {sendingMsg ? "Sending Message..." : "Send Message 🚀"}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
         </>
     )
 }
